@@ -218,63 +218,10 @@ export default function ProfileScreen() {
     );
   }
 
-  const smileyId = user?.username ? `@${user.username}` : "@user";
-
-  const handleDeletePost = async (postId: string) => {
-    Alert.alert("Delete Moment", "Are you sure you want to delete this moment?", [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Delete",
-        style: "destructive",
-        onPress: async () => {
-          try {
-            await PostAPI.delete(postId);
-            setUserPosts((prev) => prev.filter((p) => p._id !== postId));
-            setShowPostModal(false);
-            Alert.alert("Deleted", "Your moment has been deleted.");
-          } catch (e: any) {
-            Alert.alert("Error", e.response?.data?.message || "Could not delete moment");
-          }
-        },
-      },
-    ]);
-  };
-
-  const handleClearCache = async () => {
-    Alert.alert("Clear Cache", "Clear temporary cached media and local session cache?", [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Clear Cache",
-        onPress: () => {
-          Alert.alert("Cache Cleared", "Temporary cache has been cleared successfully.");
-        },
-      },
-    ]);
-  };
+  const raazId = user?.username ? `@${user.username}` : "@raaz_user";
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* ================= TOP BAR WITH HAMBURGER MENU ================= */}
-      <View style={styles.topBar}>
-        <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-          <Text style={styles.topBarTitle}>My Space</Text>
-          {user?.isProfilePrivate && (
-            <View style={styles.privateBadge}>
-              <Ionicons name="lock-closed" size={11} color="#FFFFFF" />
-              <Text style={styles.privateBadgeText}>Private</Text>
-            </View>
-          )}
-        </View>
-
-        <TouchableOpacity
-          style={styles.hamburgerBtn}
-          onPress={() => setShowSettingsModal(true)}
-          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-        >
-          <Ionicons name="menu" size={26} color="#111827" />
-        </TouchableOpacity>
-      </View>
-
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
         {/* ================= PROFILE CARD ================= */}
         <View style={styles.profileCard}>
@@ -299,30 +246,10 @@ export default function ProfileScreen() {
 
           <Text style={styles.fullName}>{user?.fullName || "User"}</Text>
           <View style={styles.raazIdBox}>
-            <Text style={styles.raazIdText}>{smileyId}</Text>
+            <Text style={styles.raazIdText}>{raazId}</Text>
           </View>
 
           <Text style={styles.bioText}>{user?.bio || "Hey there! I am using SmileyX."}</Text>
-
-          {/* Stats Bar */}
-          <View style={styles.statsRow}>
-            <View style={styles.statBox}>
-              <Text style={styles.statNumber}>{userPosts.length}</Text>
-              <Text style={styles.statLabel}>Moments</Text>
-            </View>
-            <View style={styles.statDivider} />
-            <View style={styles.statBox}>
-              <Text style={styles.statNumber}>{user?.friendsCount || 0}</Text>
-              <Text style={styles.statLabel}>Friends</Text>
-            </View>
-            <View style={styles.statDivider} />
-            <View style={styles.statBox}>
-              <Text style={styles.statNumber}>
-                {selectedMood ? selectedMood.toUpperCase() : "CHILL"}
-              </Text>
-              <Text style={styles.statLabel}>Mood</Text>
-            </View>
-          </View>
 
           <View style={styles.btnRow}>
             <TouchableOpacity
@@ -381,6 +308,43 @@ export default function ProfileScreen() {
           </View>
         </View>
 
+        {/* ================= PROFILE SECTIONS ================= */}
+        <View style={styles.sectionCard}>
+          <View style={styles.sectionTitleRow}>
+            <Ionicons name="grid-outline" size={20} color={Palette.primaryBlue} />
+            <Text style={styles.sectionTitle}>Content Spaces</Text>
+          </View>
+          <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10, marginTop: 12 }}>
+            {[
+              { id: "moments", label: "Moments", icon: "images" },
+              { id: "loops", label: "Loops", icon: "videocam" },
+              { id: "keepsakes", label: "Keepsakes", icon: "bookmark" },
+              { id: "capsules", label: "LifeCapsule", icon: "hourglass" },
+            ].map((sec) => (
+              <TouchableOpacity
+                key={sec.id}
+                style={{
+                  width: "47%",
+                  backgroundColor: "#F8FAFF",
+                  borderRadius: Radii.lg,
+                  padding: 12,
+                  borderWidth: 1,
+                  borderColor: Palette.borderLight,
+                  flexDirection: "row",
+                  alignItems: "center",
+                  gap: 8,
+                }}
+                onPress={() => router.push("/(tabs)/home")}
+              >
+                <Ionicons name={sec.icon as any} size={18} color={Palette.primaryBlue} />
+                <Text style={{ fontSize: 13, fontWeight: "700", color: Palette.primaryTextLight }}>
+                  {sec.label}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
+
         {/* ================= FEELINGS MODE ================= */}
         <View style={styles.sectionCard}>
           <View style={styles.sectionTitleRow}>
@@ -388,7 +352,7 @@ export default function ProfileScreen() {
             <Text style={styles.sectionTitle}>Feelings Mode</Text>
           </View>
           <Text style={styles.sectionSubtitle}>
-            Share how you are feeling today. Private by default.
+            Share how you are feeling with friends today. Private by default.
           </Text>
 
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginTop: 12 }}>
@@ -415,571 +379,97 @@ export default function ProfileScreen() {
           </ScrollView>
         </View>
 
-        {/* ================= USER'S PUBLISHED CONTENT TABS ================= */}
+        {/* ================= GHOST MODE & PRIVACY ================= */}
         <View style={styles.sectionCard}>
-          <View style={styles.contentTabsHeader}>
-            {[
-              { id: "moments", label: `Moments (${userPosts.length})`, icon: "images" },
-              { id: "loops", label: "Loops", icon: "videocam" },
-              { id: "keepsakes", label: "Keepsakes", icon: "bookmark" },
-              { id: "capsules", label: "LifeCapsule", icon: "hourglass" },
-            ].map((t) => (
-              <TouchableOpacity
-                key={t.id}
-                style={[
-                  styles.contentTabBtn,
-                  activeTab === t.id && styles.contentTabBtnActive,
-                ]}
-                onPress={() => setActiveTab(t.id as any)}
-              >
-                <Ionicons
-                  name={t.icon as any}
-                  size={15}
-                  color={activeTab === t.id ? Palette.primaryBlue : Palette.secondaryTextLight}
-                />
-                <Text
-                  style={[
-                    styles.contentTabBtnText,
-                    activeTab === t.id && styles.contentTabBtnTextActive,
-                  ]}
-                >
-                  {t.label}
-                </Text>
-              </TouchableOpacity>
-            ))}
+          <View style={styles.sectionTitleRow}>
+            <Ionicons name="eye-off" size={20} color={SAFFRON} />
+            <Text style={styles.sectionTitle}>Ghost Mode & Privacy</Text>
+          </View>
+          <Text style={styles.sectionSubtitle}>
+            Fine-tune presence visibility and quiet hours.
+          </Text>
+
+          <View style={styles.settingItem}>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.settingLabel}>Ghost Mode (Master Switch)</Text>
+              <Text style={styles.settingDesc}>
+                Instantly hides online presence, typing, and last seen from everyone.
+              </Text>
+            </View>
+            <Switch
+              value={ghostMode}
+              onValueChange={handleToggleGhostMode}
+              trackColor={{ false: "#EADFD6", true: SAFFRON }}
+            />
           </View>
 
-          {/* TAB CONTENT */}
-          {activeTab === "moments" && (
-            <View style={{ marginTop: 14 }}>
-              {postsLoading ? (
-                <ActivityIndicator color={Palette.primaryBlue} style={{ paddingVertical: 20 }} />
-              ) : userPosts.length > 0 ? (
-                <View style={styles.userPostsList}>
-                  {userPosts.map((post) => (
-                    <TouchableOpacity
-                      key={post._id}
-                      style={styles.userPostCard}
-                      activeOpacity={0.85}
-                      onPress={() => {
-                        setSelectedPost(post);
-                        setShowPostModal(true);
-                      }}
-                    >
-                      <View style={styles.userPostHeader}>
-                        <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
-                          {Boolean(post.feeling) && (
-                            <View style={styles.feelingBadge}>
-                              <Text style={styles.feelingBadgeText}>{post.feeling}</Text>
-                            </View>
-                          )}
-                          <Text style={styles.userPostTime}>
-                            {new Date(post.createdAt).toLocaleDateString([], {
-                              month: "short",
-                              day: "numeric",
-                            })}
-                          </Text>
-                        </View>
-                        <Text style={styles.audienceTag}>{post.audience}</Text>
-                      </View>
-
-                      {Boolean(post.text) && (
-                        <Text style={styles.userPostText} numberOfLines={3}>
-                          {post.text}
-                        </Text>
-                      )}
-
-                      {post.media && post.media.length > 0 && (
-                        <Image
-                          source={{ uri: post.media[0].url }}
-                          style={styles.userPostMedia}
-                          resizeMode="cover"
-                        />
-                      )}
-
-                      {/* Poll Preview */}
-                      {post.poll && post.poll.question && (
-                        <View style={styles.pollPreviewBox}>
-                          <Ionicons name="bar-chart" size={16} color={Palette.primaryBlue} />
-                          <Text style={styles.pollPreviewText} numberOfLines={1}>
-                            Poll: {post.poll.question}
-                          </Text>
-                        </View>
-                      )}
-
-                      <View style={styles.userPostFooter}>
-                        <View style={styles.postStatItem}>
-                          <Ionicons name="heart" size={16} color="#EC4899" />
-                          <Text style={styles.postStatText}>{post.reactions?.length || 0}</Text>
-                        </View>
-                        <View style={styles.postStatItem}>
-                          <Ionicons name="chatbubble-outline" size={15} color={Palette.secondaryTextLight} />
-                          <Text style={styles.postStatText}>{post.commentsCount || 0}</Text>
-                        </View>
-                        <View style={styles.postStatItem}>
-                          <Ionicons name="bookmark-outline" size={15} color={Palette.secondaryTextLight} />
-                          <Text style={styles.postStatText}>{post.saveCount || 0}</Text>
-                        </View>
-                      </View>
-                    </TouchableOpacity>
-                  ))}
-                </View>
-              ) : (
-                <View style={styles.emptyPostsCard}>
-                  <Ionicons name="sparkles-outline" size={40} color={Palette.primaryBlue} />
-                  <Text style={styles.emptyPostsTitle}>No Moments Published Yet</Text>
-                  <Text style={styles.emptyPostsDesc}>
-                    Capture a moment, share a feeling, or start a poll to share your world.
-                  </Text>
-                  <TouchableOpacity
-                    style={styles.createMomentBtn}
-                    onPress={() => router.push("/(tabs)/create")}
-                  >
-                    <Ionicons name="add" size={18} color="#FFFFFF" />
-                    <Text style={styles.createMomentBtnText}>Create Moment</Text>
-                  </TouchableOpacity>
-                </View>
-              )}
-            </View>
-          )}
-
-          {activeTab !== "moments" && (
-            <View style={styles.emptyPostsCard}>
-              <Ionicons name="cube-outline" size={36} color="#94A3B8" />
-              <Text style={styles.emptyPostsTitle}>
-                {activeTab === "loops"
-                  ? "No Loops Shared"
-                  : activeTab === "keepsakes"
-                  ? "No Keepsakes Saved"
-                  : "LifeCapsule Ready"}
-              </Text>
-              <Text style={styles.emptyPostsDesc}>
-                {activeTab === "loops"
-                  ? "Short video loops will appear here."
-                  : activeTab === "keepsakes"
-                  ? "Save your favorite moments to revisit anytime."
-                  : "Preserve memories for your future self."}
+          <View style={styles.settingItem}>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.settingLabel}>Read Receipts</Text>
+              <Text style={styles.settingDesc}>
+                Show blue checkmarks when messages are read.
               </Text>
             </View>
+            <Switch
+              value={showReadReceipts}
+              onValueChange={async (v) => {
+                setShowReadReceipts(v);
+                await UserAPI.updatePrivacy({ showReadReceipts: v });
+              }}
+              trackColor={{ false: "#EADFD6", true: SAFFRON }}
+            />
+          </View>
+        </View>
+
+        {/* ================= ACCOUNT SETTINGS ================= */}
+        <View style={styles.sectionCard}>
+          {(user?.role === "admin" || user?.role === "super_admin") && (
+            <TouchableOpacity
+              style={[styles.navRow, { backgroundColor: "#FFF2E2", borderRadius: 12, paddingHorizontal: 12, marginVertical: 4 }]}
+              onPress={() => router.push("/admin" as any)}
+            >
+              <Ionicons name="shield-checkmark" size={22} color={SAFFRON} />
+              <View style={{ flex: 1, marginLeft: 10 }}>
+                <Text style={[styles.navRowText, { color: SAFFRON, fontWeight: "800" }]}>
+                  Super Admin Control Center
+                </Text>
+                <Text style={{ fontSize: 11, color: "#888" }}>
+                  Platform CRUD, Users, Moderation, Settings
+                </Text>
+              </View>
+              <Ionicons name="chevron-forward" size={18} color={SAFFRON} />
+            </TouchableOpacity>
           )}
+
+          <TouchableOpacity
+            style={styles.navRow}
+            onPress={() => setShowPasswordModal(true)}
+          >
+            <Ionicons name="lock-closed-outline" size={20} color="#555" />
+            <Text style={styles.navRowText}>Change Password</Text>
+            <Ionicons name="chevron-forward" size={18} color="#C4B9AD" />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.navRow}
+            onPress={() => router.push("/(tabs)/contacts")}
+          >
+            <Ionicons name="people-outline" size={20} color="#555" />
+            <Text style={styles.navRowText}>Contacts & Blocked Users</Text>
+            <Ionicons name="chevron-forward" size={18} color="#C4B9AD" />
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.navRow} onPress={handleLogout}>
+            <Ionicons name="log-out-outline" size={20} color="#DC2626" />
+            <Text style={[styles.navRowText, { color: "#DC2626" }]}>Log Out</Text>
+            <Ionicons name="chevron-forward" size={18} color="#C4B9AD" />
+          </TouchableOpacity>
         </View>
 
         <View style={styles.versionFooter}>
           <Text style={styles.versionText}>SmileyX v2.0 • Your Moments. Your Feelings. Your World.</Text>
         </View>
       </ScrollView>
-
-      {/* ================= SEPARATE SETTINGS HAMBURGER MODAL (SECTIONS A TO H) ================= */}
-      <Modal visible={showSettingsModal} animationType="slide">
-        <SafeAreaView style={styles.settingsModalSafe}>
-          {/* Settings Modal Header */}
-          <View style={styles.settingsModalHeader}>
-            <TouchableOpacity onPress={() => setShowSettingsModal(false)}>
-              <Ionicons name="close" size={26} color="#111827" />
-            </TouchableOpacity>
-            <Text style={styles.settingsModalTitle}>Settings & Privacy</Text>
-            <View style={{ width: 26 }} />
-          </View>
-
-          <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.settingsModalContent}>
-            {/* SECTION A: ACCOUNT */}
-            <View style={styles.settingsGroup}>
-              <Text style={styles.settingsGroupHeading}>Account</Text>
-
-              <TouchableOpacity
-                style={styles.settingsRow}
-                onPress={() => {
-                  setShowSettingsModal(false);
-                  setShowEditModal(true);
-                }}
-              >
-                <Ionicons name="person-outline" size={20} color={Palette.primaryBlue} />
-                <View style={{ flex: 1, marginLeft: 12 }}>
-                  <Text style={styles.settingsRowTitle}>Personal Information</Text>
-                  <Text style={styles.settingsRowDesc}>{user?.email || "Update name, bio, and avatar"}</Text>
-                </View>
-                <Ionicons name="chevron-forward" size={18} color="#94A3B8" />
-              </TouchableOpacity>
-
-              <View style={styles.settingsRow}>
-                <Ionicons name="lock-closed-outline" size={20} color={Palette.primaryBlue} />
-                <View style={{ flex: 1, marginLeft: 12 }}>
-                  <Text style={styles.settingsRowTitle}>Private Account</Text>
-                  <Text style={styles.settingsRowDesc}>Only approved friends can view your moments</Text>
-                </View>
-                <Switch
-                  value={user?.isProfilePrivate || false}
-                  onValueChange={async (val) => {
-                    setUser((prev: any) => ({ ...prev, isProfilePrivate: val }));
-                    await UserAPI.updatePrivacy({ isProfilePrivate: val });
-                  }}
-                  trackColor={{ false: "#E2E8F0", true: Palette.primaryBlue }}
-                />
-              </View>
-
-              <TouchableOpacity
-                style={styles.settingsRow}
-                onPress={() => Alert.alert("Deactivate Account", "Contact safety@smileyx.app to process account deactivation.")}
-              >
-                <Ionicons name="pause-circle-outline" size={20} color="#DC2626" />
-                <View style={{ flex: 1, marginLeft: 12 }}>
-                  <Text style={[styles.settingsRowTitle, { color: "#DC2626" }]}>Deactivate Account</Text>
-                  <Text style={styles.settingsRowDesc}>Temporarily suspend your SmileyX presence</Text>
-                </View>
-                <Ionicons name="chevron-forward" size={18} color="#94A3B8" />
-              </TouchableOpacity>
-            </View>
-
-            {/* SECTION B: PRIVACY */}
-            <View style={styles.settingsGroup}>
-              <Text style={styles.settingsGroupHeading}>Privacy & Visibility</Text>
-
-              <View style={styles.settingsRow}>
-                <Ionicons name="eye-off-outline" size={20} color={Palette.primaryBlue} />
-                <View style={{ flex: 1, marginLeft: 12 }}>
-                  <Text style={styles.settingsRowTitle}>Ghost Mode (Master Switch)</Text>
-                  <Text style={styles.settingsRowDesc}>Hides online presence, typing status, and last seen</Text>
-                </View>
-                <Switch
-                  value={ghostMode}
-                  onValueChange={handleToggleGhostMode}
-                  trackColor={{ false: "#E2E8F0", true: Palette.primaryBlue }}
-                />
-              </View>
-
-              <View style={styles.settingsRow}>
-                <Ionicons name="radio-outline" size={20} color={Palette.primaryBlue} />
-                <View style={{ flex: 1, marginLeft: 12 }}>
-                  <Text style={styles.settingsRowTitle}>Online Status</Text>
-                  <Text style={styles.settingsRowDesc}>Allow friends to see when you are active</Text>
-                </View>
-                <Switch
-                  value={showOnline}
-                  onValueChange={async (v) => {
-                    setShowOnline(v);
-                    await UserAPI.updatePrivacy({ showOnline: v });
-                  }}
-                  trackColor={{ false: "#E2E8F0", true: Palette.primaryBlue }}
-                />
-              </View>
-
-              <View style={styles.settingsRow}>
-                <Ionicons name="time-outline" size={20} color={Palette.primaryBlue} />
-                <View style={{ flex: 1, marginLeft: 12 }}>
-                  <Text style={styles.settingsRowTitle}>Last Seen</Text>
-                  <Text style={styles.settingsRowDesc}>Display timestamp of last session</Text>
-                </View>
-                <Switch
-                  value={showLastSeen}
-                  onValueChange={async (v) => {
-                    setShowLastSeen(v);
-                    await UserAPI.updatePrivacy({ showLastSeen: v });
-                  }}
-                  trackColor={{ false: "#E2E8F0", true: Palette.primaryBlue }}
-                />
-              </View>
-
-              <View style={styles.settingsRow}>
-                <Ionicons name="checkmark-done-outline" size={20} color={Palette.primaryBlue} />
-                <View style={{ flex: 1, marginLeft: 12 }}>
-                  <Text style={styles.settingsRowTitle}>Read Receipts</Text>
-                  <Text style={styles.settingsRowDesc}>Show blue ticks when messages are opened</Text>
-                </View>
-                <Switch
-                  value={showReadReceipts}
-                  onValueChange={async (v) => {
-                    setShowReadReceipts(v);
-                    await UserAPI.updatePrivacy({ showReadReceipts: v });
-                  }}
-                  trackColor={{ false: "#E2E8F0", true: Palette.primaryBlue }}
-                />
-              </View>
-
-              <TouchableOpacity
-                style={styles.settingsRow}
-                onPress={() => {
-                  setShowSettingsModal(false);
-                  router.push("/(tabs)/contacts");
-                }}
-              >
-                <Ionicons name="ban-outline" size={20} color="#DC2626" />
-                <View style={{ flex: 1, marginLeft: 12 }}>
-                  <Text style={styles.settingsRowTitle}>Blocked Accounts</Text>
-                  <Text style={styles.settingsRowDesc}>Manage blocked friends and contacts</Text>
-                </View>
-                <Ionicons name="chevron-forward" size={18} color="#94A3B8" />
-              </TouchableOpacity>
-            </View>
-
-            {/* SECTION C: NOTIFICATIONS */}
-            <View style={styles.settingsGroup}>
-              <Text style={styles.settingsGroupHeading}>Notifications</Text>
-
-              <View style={styles.settingsRow}>
-                <Ionicons name="notifications-outline" size={20} color={Palette.primaryBlue} />
-                <View style={{ flex: 1, marginLeft: 12 }}>
-                  <Text style={styles.settingsRowTitle}>Push Notifications</Text>
-                  <Text style={styles.settingsRowDesc}>Receive alerts on lock screen</Text>
-                </View>
-                <Switch
-                  value={pushEnabled}
-                  onValueChange={setPushEnabled}
-                  trackColor={{ false: "#E2E8F0", true: Palette.primaryBlue }}
-                />
-              </View>
-
-              <View style={styles.settingsRow}>
-                <Ionicons name="chatbubble-ellipses-outline" size={20} color={Palette.primaryBlue} />
-                <View style={{ flex: 1, marginLeft: 12 }}>
-                  <Text style={styles.settingsRowTitle}>Message Alerts</Text>
-                  <Text style={styles.settingsRowDesc}>Sound & banner for incoming messages</Text>
-                </View>
-                <Switch
-                  value={msgNotifs}
-                  onValueChange={setMsgNotifs}
-                  trackColor={{ false: "#E2E8F0", true: Palette.primaryBlue }}
-                />
-              </View>
-
-              <View style={styles.settingsRow}>
-                <Ionicons name="moon-outline" size={20} color={Palette.primaryBlue} />
-                <View style={{ flex: 1, marginLeft: 12 }}>
-                  <Text style={styles.settingsRowTitle}>Quiet Hours (No Disturb)</Text>
-                  <Text style={styles.settingsRowDesc}>Mute non-essential notifications overnight</Text>
-                </View>
-                <Switch
-                  value={quietHours}
-                  onValueChange={setQuietHours}
-                  trackColor={{ false: "#E2E8F0", true: Palette.primaryBlue }}
-                />
-              </View>
-            </View>
-
-            {/* SECTION D: CHAT SETTINGS */}
-            <View style={styles.settingsGroup}>
-              <Text style={styles.settingsGroupHeading}>Chat Settings</Text>
-
-              <View style={styles.settingsRow}>
-                <Ionicons name="cloud-download-outline" size={20} color={Palette.primaryBlue} />
-                <View style={{ flex: 1, marginLeft: 12 }}>
-                  <Text style={styles.settingsRowTitle}>Media Auto-Download</Text>
-                  <Text style={styles.settingsRowDesc}>Automatically download photos on Wi-Fi</Text>
-                </View>
-                <Switch
-                  value={mediaAutoDownload}
-                  onValueChange={setMediaAutoDownload}
-                  trackColor={{ false: "#E2E8F0", true: Palette.primaryBlue }}
-                />
-              </View>
-
-              <View style={styles.settingsRow}>
-                <Ionicons name="timer-outline" size={20} color={Palette.primaryBlue} />
-                <View style={{ flex: 1, marginLeft: 12 }}>
-                  <Text style={styles.settingsRowTitle}>Disappearing Messages</Text>
-                  <Text style={styles.settingsRowDesc}>Enable automatic 24h ephemeral chats</Text>
-                </View>
-                <Switch
-                  value={disappearingMessages}
-                  onValueChange={setDisappearingMessages}
-                  trackColor={{ false: "#E2E8F0", true: Palette.primaryBlue }}
-                />
-              </View>
-            </View>
-
-            {/* SECTION E: APPEARANCE */}
-            <View style={styles.settingsGroup}>
-              <Text style={styles.settingsGroupHeading}>Appearance & Theme</Text>
-
-              <View style={{ flexDirection: "row", gap: 10, marginVertical: 8 }}>
-                {[
-                  { id: "light", label: "Light", icon: "sunny" },
-                  { id: "dark", label: "Dark", icon: "moon" },
-                  { id: "system", label: "System", icon: "phone-portrait" },
-                ].map((th) => (
-                  <TouchableOpacity
-                    key={th.id}
-                    style={{
-                      flex: 1,
-                      paddingVertical: 12,
-                      borderRadius: Radii.lg,
-                      borderWidth: 2,
-                      borderColor: themeMode === th.id ? Palette.primaryBlue : Palette.borderLight,
-                      backgroundColor: themeMode === th.id ? "#EFF6FF" : "#FFFFFF",
-                      alignItems: "center",
-                      gap: 4,
-                    }}
-                    onPress={() => setThemeMode(th.id as any)}
-                  >
-                    <Ionicons
-                      name={th.icon as any}
-                      size={20}
-                      color={themeMode === th.id ? Palette.primaryBlue : Palette.secondaryTextLight}
-                    />
-                    <Text
-                      style={{
-                        fontSize: 12,
-                        fontWeight: "700",
-                        color: themeMode === th.id ? Palette.primaryBlue : Palette.secondaryTextLight,
-                      }}
-                    >
-                      {th.label}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-              <Text style={styles.settingsRowDesc}>Established Blue Jay Visual Theme active.</Text>
-            </View>
-
-            {/* SECTION F: SECURITY */}
-            <View style={styles.settingsGroup}>
-              <Text style={styles.settingsGroupHeading}>Security & Access</Text>
-
-              <TouchableOpacity
-                style={styles.settingsRow}
-                onPress={() => {
-                  setShowSettingsModal(false);
-                  setShowPasswordModal(true);
-                }}
-              >
-                <Ionicons name="key-outline" size={20} color={Palette.primaryBlue} />
-                <View style={{ flex: 1, marginLeft: 12 }}>
-                  <Text style={styles.settingsRowTitle}>Change Password</Text>
-                  <Text style={styles.settingsRowDesc}>Update your account security credential</Text>
-                </View>
-                <Ionicons name="chevron-forward" size={18} color="#94A3B8" />
-              </TouchableOpacity>
-
-              {(user?.role === "admin" || user?.role === "super_admin") && (
-                <TouchableOpacity
-                  style={[styles.settingsRow, { backgroundColor: "#FFF7ED", borderRadius: Radii.md, padding: 8 }]}
-                  onPress={() => {
-                    setShowSettingsModal(false);
-                    router.push("/admin" as any);
-                  }}
-                >
-                  <Ionicons name="shield-checkmark" size={22} color={Palette.primaryBlue} />
-                  <View style={{ flex: 1, marginLeft: 12 }}>
-                    <Text style={[styles.settingsRowTitle, { color: Palette.primaryBlue, fontWeight: "800" }]}>
-                      Super Admin Control Center
-                    </Text>
-                    <Text style={styles.settingsRowDesc}>Platform metrics, user moderation & audit logs</Text>
-                  </View>
-                  <Ionicons name="chevron-forward" size={18} color={Palette.primaryBlue} />
-                </TouchableOpacity>
-              )}
-            </View>
-
-            {/* SECTION G: DATA AND STORAGE */}
-            <View style={styles.settingsGroup}>
-              <Text style={styles.settingsGroupHeading}>Data & Storage</Text>
-
-              <TouchableOpacity style={styles.settingsRow} onPress={handleClearCache}>
-                <Ionicons name="trash-bin-outline" size={20} color={Palette.primaryBlue} />
-                <View style={{ flex: 1, marginLeft: 12 }}>
-                  <Text style={styles.settingsRowTitle}>Clear Cache</Text>
-                  <Text style={styles.settingsRowDesc}>Free temporary disk space without losing posts</Text>
-                </View>
-                <Ionicons name="chevron-forward" size={18} color="#94A3B8" />
-              </TouchableOpacity>
-            </View>
-
-            {/* SECTION H: SUPPORT AND INFORMATION */}
-            <View style={styles.settingsGroup}>
-              <Text style={styles.settingsGroupHeading}>Support & Legal</Text>
-
-              <TouchableOpacity
-                style={styles.settingsRow}
-                onPress={() => Alert.alert("SmileyX Platform", "SmileyX v2.0 • Your Moments. Your Feelings. Your World.\n\nAll Rights Reserved.")}
-              >
-                <Ionicons name="information-circle-outline" size={20} color={Palette.primaryBlue} />
-                <View style={{ flex: 1, marginLeft: 12 }}>
-                  <Text style={styles.settingsRowTitle}>About SmileyX</Text>
-                  <Text style={styles.settingsRowDesc}>Version 2.0 • Blue Jay Release</Text>
-                </View>
-                <Ionicons name="chevron-forward" size={18} color="#94A3B8" />
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={styles.settingsRow}
-                onPress={() => Alert.alert("Privacy & Terms", "By using SmileyX, you agree to our Terms of Service and Privacy Policy. Phone numbers and private feelings are never sold.")}
-              >
-                <Ionicons name="document-text-outline" size={20} color={Palette.primaryBlue} />
-                <View style={{ flex: 1, marginLeft: 12 }}>
-                  <Text style={styles.settingsRowTitle}>Terms & Privacy Policy</Text>
-                  <Text style={styles.settingsRowDesc}>Platform safety rules & community standards</Text>
-                </View>
-                <Ionicons name="chevron-forward" size={18} color="#94A3B8" />
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={[styles.settingsRow, { marginTop: 10 }]}
-                onPress={() => {
-                  setShowSettingsModal(false);
-                  handleLogout();
-                }}
-              >
-                <Ionicons name="log-out-outline" size={20} color="#DC2626" />
-                <View style={{ flex: 1, marginLeft: 12 }}>
-                  <Text style={[styles.settingsRowTitle, { color: "#DC2626", fontWeight: "800" }]}>Log Out</Text>
-                  <Text style={styles.settingsRowDesc}>Securely end your current device session</Text>
-                </View>
-                <Ionicons name="chevron-forward" size={18} color="#DC2626" />
-              </TouchableOpacity>
-            </View>
-          </ScrollView>
-        </SafeAreaView>
-      </Modal>
-
-      {/* ================= POST DETAILS & ACTION MODAL ================= */}
-      <Modal visible={showPostModal} transparent animationType="slide">
-        <View style={styles.modalOverlay}>
-          <View style={styles.postDetailCard}>
-            <View style={styles.modalTopRow}>
-              <Text style={styles.postDetailTitle}>Moment Details</Text>
-              <TouchableOpacity onPress={() => setShowPostModal(false)}>
-                <Ionicons name="close-circle" size={26} color="#777" />
-              </TouchableOpacity>
-            </View>
-
-            {selectedPost && (
-              <ScrollView showsVerticalScrollIndicator={false} style={{ maxHeight: 420 }}>
-                {Boolean(selectedPost.feeling) && (
-                  <View style={[styles.feelingBadge, { alignSelf: "flex-start", marginBottom: 10 }]}>
-                    <Text style={styles.feelingBadgeText}>{selectedPost.feeling}</Text>
-                  </View>
-                )}
-
-                {Boolean(selectedPost.text) && (
-                  <Text style={{ fontSize: 16, color: "#111827", lineHeight: 22, marginBottom: 12 }}>
-                    {selectedPost.text}
-                  </Text>
-                )}
-
-                {selectedPost.media && selectedPost.media.length > 0 && (
-                  <Image
-                    source={{ uri: selectedPost.media[0].url }}
-                    style={{ width: "100%", height: 220, borderRadius: Radii.lg, marginBottom: 14 }}
-                    resizeMode="cover"
-                  />
-                )}
-
-                <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingTop: 10, borderTopWidth: 1, borderTopColor: "#E2E8F0" }}>
-                  <Text style={{ fontSize: 13, color: "#64748B" }}>
-                    🔥 {selectedPost.reactions?.length || 0} reactions • 💬 {selectedPost.commentsCount || 0} comments
-                  </Text>
-                  <TouchableOpacity
-                    style={{ flexDirection: "row", alignItems: "center", gap: 6, paddingVertical: 6, paddingHorizontal: 12, backgroundColor: "#FEE2E2", borderRadius: Radii.md }}
-                    onPress={() => handleDeletePost(selectedPost._id)}
-                  >
-                    <Ionicons name="trash" size={16} color="#DC2626" />
-                    <Text style={{ color: "#DC2626", fontSize: 13, fontWeight: "700" }}>Delete</Text>
-                  </TouchableOpacity>
-                </View>
-              </ScrollView>
-            )}
-          </View>
-        </View>
-      </Modal>
 
       {/* ================= QR CODE MODAL ================= */}
       <Modal visible={showQRModal} transparent animationType="fade">
