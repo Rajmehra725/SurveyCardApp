@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "SmileyX",
-    "slug": "smileyx",
+    "slug": "SurveyCardApp",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/Icon.png",
@@ -60,6 +60,7 @@
       "eas": {
         "projectId": "fa30c3de-0f64-4eb8-b3a9-b5d4f37cdb6c"
       }
-    }
+    },
+    "owner": "rajmehra001"
   }
 }
